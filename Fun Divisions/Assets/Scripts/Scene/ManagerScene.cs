@@ -12,6 +12,15 @@ public class ManagerScene: MonoBehaviour
     [SerializeField] GameObject startButton;
     [SerializeField] GameObject exitButton;
 
+    [Header("End Value")]
+    [SerializeField] int endValue=1;
+
+    [Header("Time")]
+    [SerializeField] float fadeTime = 0.8f;
+    [SerializeField] float delayTime = 0.5f;
+
+
+
 
     private void Awake()
     {
@@ -22,10 +31,10 @@ public class ManagerScene: MonoBehaviour
 
     void FadeOut()
     {
-        startButton.GetComponent<CanvasGroup>().DOFade(1, 0.8F);
-        exitButton.GetComponent<CanvasGroup>().DOFade(1, 0.8f).SetDelay(0.5f);
+        startButton.GetComponent<CanvasGroup>().DOFade(endValue, fadeTime);
+        exitButton.GetComponent<CanvasGroup>().DOFade(endValue, 0.8f).SetDelay(delayTime);
     }
-
+    
 
     public void StartScene()
     {
