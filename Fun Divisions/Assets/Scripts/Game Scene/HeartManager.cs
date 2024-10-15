@@ -6,7 +6,7 @@ public class HeartManager : MonoBehaviour
 {
 
     [SerializeField] GameObject[] heartImg;
-    [SerializeField] GameObject losePanel;
+    
 
 
     public void CheckHeart(int heart)

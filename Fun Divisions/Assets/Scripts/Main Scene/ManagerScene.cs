@@ -45,5 +45,6 @@ public class ManagerScene: MonoBehaviour
     {
         Application.Quit();
     }
+
    
 }

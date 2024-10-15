@@ -8,6 +8,9 @@ public class GameManager : MonoBehaviour
 {
     [Header("Game Object")]
     [SerializeField] GameObject squarePrefabs;
+    [SerializeField] GameObject finalPanel;
+    GameObject[] squaresArray = new GameObject[25];
+    GameObject currentSquare;
 
     [Header("Transform")]
     [SerializeField] Transform squaresPanel;
@@ -15,7 +18,6 @@ public class GameManager : MonoBehaviour
 
     [Header("End Value")]
     [SerializeField] int endValue = 1;
-
 
     [Header("Time")]
     [SerializeField] float fadeTime = 0.2f;
@@ -27,7 +29,11 @@ public class GameManager : MonoBehaviour
     [Header("Sprites")]
     [SerializeField] Sprite[] sprite_;
 
-    GameObject[] squaresArray = new GameObject[25];
+    [SerializeField] AudioSource audioSource;
+    public AudioClip buttonClip;
+
+
+    
     List<int> sectionValuesList = new List<int>();
 
     int dividedNumber, divisorNumber;
@@ -36,16 +42,13 @@ public class GameManager : MonoBehaviour
     int correctResult;
     int heart_ = 3;
 
+
     bool isButtonPass;
 
     string difficultyLevelProblem;
 
     HeartManager heartManager;
     ScoreManager scoreManager;
-
-    GameObject currentSquare;
-
-    [SerializeField] GameObject finalPanel;
 
 
     private void Start()
@@ -60,8 +63,16 @@ public class GameManager : MonoBehaviour
         isButtonPass = false;
 
         questionsPanel.GetComponent<RectTransform>().localScale = Vector3.zero;
-        
+
+
+
+
+        audioSource = GetComponent<AudioSource>();
+
         CreateSquares();
+
+
+
     }
 
     public void CreateSquares()
@@ -75,8 +86,8 @@ public class GameManager : MonoBehaviour
             squaresArray[i] = squares;
         }
 
-        SectionValuesText();
         StartCoroutine(DoFadeRoutine());
+        SectionValuesText();
         Invoke("QuestionPanelOpen", 2.3f);
     }
 
@@ -84,6 +95,8 @@ public class GameManager : MonoBehaviour
     {
         if (isButtonPass)
         {
+            audioSource.PlayOneShot(buttonClip);
+
             buttonValue = int.Parse(UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject.transform.GetChild(0).GetComponent<Text>().text);
 
             currentSquare = UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject;
@@ -111,20 +124,18 @@ public class GameManager : MonoBehaviour
             else
             {
                 FinishGame();
-            }
-
-            
+            } 
         }
         else 
         {
             heart_--;
             heartManager.CheckHeart(heart_);
-
         }
+
 
         if (heart_ <= 0)
         {
-            Debug.Log("Game Over");
+            FinishGame();
         }
     }
 
@@ -136,11 +147,12 @@ public class GameManager : MonoBehaviour
 
     IEnumerator DoFadeRoutine()
     {
-        foreach (var squares_ in squaresArray)
+        foreach (var squares in squaresArray)
         {
-            squares_.GetComponent<CanvasGroup>().DOFade(endValue,fadeTime);
+            squares.GetComponent<CanvasGroup>().DOFade(endValue, fadeTime);
 
             yield return new WaitForSeconds(delayTime);
+
         }
     }
 
