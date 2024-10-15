@@ -24,6 +24,8 @@ public class GameManager : MonoBehaviour
     [Header("Text")]
     [SerializeField] Text questionsText;
 
+    [Header("Sprites")]
+    [SerializeField] Sprite[] sprite_;
 
     GameObject[] squaresArray = new GameObject[25];
     List<int> sectionValuesList = new List<int>();
@@ -32,12 +34,29 @@ public class GameManager : MonoBehaviour
     int questionIndex;
     int buttonValue;
     int correctResult;
+    int heart_ = 3;
 
     bool isButtonPass;
+
+    string difficultyLevelProblem;
+
+    HeartManager heartManager;
+    ScoreManager scoreManager;
+
+    GameObject currentSquare;
+
+    [SerializeField] GameObject finalPanel;
 
 
     private void Start()
     {
+        heartManager = Object.FindObjectOfType<HeartManager>(); //scripte ulasma
+        heartManager.CheckHeart(heart_);
+
+        scoreManager=Object.FindObjectOfType<ScoreManager>();
+
+        finalPanel.GetComponent<RectTransform>().localScale = Vector3.zero;
+
         isButtonPass = false;
 
         questionsPanel.GetComponent<RectTransform>().localScale = Vector3.zero;
@@ -50,12 +69,15 @@ public class GameManager : MonoBehaviour
         for (int i = 0; i < squaresArray.Length; i++)
         {
             GameObject squares = Instantiate(squarePrefabs, squaresPanel);
+
+            squares.transform.GetChild(1).GetComponent<Image>().sprite = sprite_[Random.Range( 0, sprite_.Length)];
             squares.GetComponent<Button>().onClick.AddListener(() => ButtonPass());
             squaresArray[i] = squares;
         }
 
         SectionValuesText();
         StartCoroutine(DoFadeRoutine());
+        Invoke("QuestionPanelOpen", 2.3f);
     }
 
     void ButtonPass()
@@ -63,7 +85,8 @@ public class GameManager : MonoBehaviour
         if (isButtonPass)
         {
             buttonValue = int.Parse(UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject.transform.GetChild(0).GetComponent<Text>().text);
-            Debug.Log(buttonValue);
+
+            currentSquare = UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject;
 
             CheckTheResult();
         }
@@ -73,12 +96,42 @@ public class GameManager : MonoBehaviour
     {
         if (buttonValue == correctResult)
         {
-            Debug.Log("TRUE");
+            currentSquare.transform.GetChild(1).GetComponent<Image>().enabled = true;
+            currentSquare.transform.GetChild(0).GetComponent<Text>().text = " ";
+            currentSquare.transform.GetComponent<Button>().interactable = false; //butona basilamaz oyuncak cikinca
+
+            scoreManager.IncreaseScore(difficultyLevelProblem);
+
+            sectionValuesList.RemoveAt(questionIndex);
+
+            if (sectionValuesList.Count > 0)
+            {
+                QuestionPanelOpen();
+            }
+            else
+            {
+                FinishGame();
+            }
+
+            
         }
-        else
+        else 
         {
-            Debug.Log("False");
+            heart_--;
+            heartManager.CheckHeart(heart_);
+
         }
+
+        if (heart_ <= 0)
+        {
+            Debug.Log("Game Over");
+        }
+    }
+
+    void FinishGame()
+    {
+        isButtonPass = false;
+        finalPanel.GetComponent<RectTransform>().DOScale(endValue, fadeTime).SetEase(Ease.OutBack);
     }
 
     IEnumerator DoFadeRoutine()
@@ -89,8 +142,6 @@ public class GameManager : MonoBehaviour
 
             yield return new WaitForSeconds(delayTime);
         }
-
-        Invoke("QuestionPanelOpen",0.5f);
     }
 
 
@@ -126,6 +177,23 @@ public class GameManager : MonoBehaviour
         correctResult = sectionValuesList[questionIndex];
 
         dividedNumber = divisorNumber * correctResult;
+
+
+
+        if (dividedNumber<=40)
+        {
+            difficultyLevelProblem = "easy";
+        }
+        else if (dividedNumber > 40 && dividedNumber<=80)
+        {
+            difficultyLevelProblem = "medium";
+        }
+        else
+        {
+            difficultyLevelProblem = "difficulty";
+        }
+
+
 
         questionsText.text = dividedNumber.ToString() + " : " + divisorNumber.ToString();
     }
